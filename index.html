@@ -1,0 +1,89 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<title>Google Maps JavaScript API v3 Example: Image MapTypes</title>
+<style type="text/css">
+body {
+  overflow:hidden;padding:0;margin:0;
+}
+</style>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?sensor=false"></script>
+<script>
+  var moonTypeOptions = {
+    getTileUrl: function(coord, zoom) {
+        console.log(coord);
+        console.log(zoom);
+        var normalizedCoord = getNormalizedCoord(coord, zoom);
+        if (!normalizedCoord) {
+          return null;
+        }
+        var bound = Math.pow(2, zoom);
+        var fin = "http://50.57.224.236/maps/space_tiles/" +
+            "/" + zoom + "/" + normalizedCoord.x + "/" +
+            (bound - normalizedCoord.y - 1) + ".png";
+
+        console.log(fin);
+        return fin;
+    },
+    tileSize: new google.maps.Size(256, 256),
+    maxZoom: 5,
+    minZoom: 1,
+    radius: 1738000,
+    name: "Test"
+  };
+
+  var moonMapType = new google.maps.ImageMapType(moonTypeOptions);
+
+  function initialize() {
+    var myLatlng = new google.maps.LatLng(0, 0);
+    var myOptions = {
+      center: myLatlng,
+      backgroundColor : "#000000",
+      draggableCursor: "default",
+      zoom: 3,
+      backgroundColor: '#000',
+      streetViewControl: false,
+      mapTypeControl : false,
+      mapTypeId: 'moon'
+    };
+
+    $('#map_canvas').width(window.innerWidth).height(window.innerHeight);
+
+    var map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
+    map.mapTypes.set('moon', moonMapType);
+    map.setMapTypeId('moon');
+  }
+
+  // Normalizes the coords that tiles repeat across the x axis (horizontally)
+  // like the standard Google map tiles.
+  function getNormalizedCoord(coord, zoom) {
+    var y = coord.y;
+    var x = coord.x;
+
+    // tile range in one direction range is dependent on zoom level
+    // 0 = 1 tile, 1 = 2 tiles, 2 = 4 tiles, 3 = 8 tiles, etc
+    var tileRange = 1 << zoom;
+
+    // don't repeat across y-axis (vertically)
+    if (y < 0 || y >= tileRange) {
+      return null;
+    }
+
+    // repeat across x-axis
+    if (x < 0 || x >= tileRange) {
+      x = (x % tileRange + tileRange) % tileRange;
+    }
+
+    return {
+      x: x,
+      y: y
+    };
+  }
+  </script>
+</head>
+<body onload="initialize()">
+  <div id="map_canvas" style="width: 900px; height: 900px;"></div>
+</body>
+</html>
